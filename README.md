@@ -52,42 +52,25 @@ Please refer to [exp/](./exp/unet_based) for a quick start on using TRDI with di
 | ReNoise | ✓ | ✅ Improved | ✅ Improved | [code](./inversions/unet_based/renoise) |
 | Guided Newton Raphson Inversion (GNRI) | ✓ | ✅ Improved | ✅ Improved | [code](./inversions/unet_based/gnri) |
 
-### Additional Supported Methods (TODO)
-
-| Method | Publication | Paper | TRDI Support |
-| ------ | ----------- | ----- | ------------ |
-| Null-Text Inversion (NTI) | CVPR 2023 | [paper](https://openaccess.thecvf.com/content/CVPR2023/html/Mokady_NULL-Text_Inversion_for_Editing_Real_Images_Using_Guided_Diffusion_Models_CVPR_2023_paper.html) | Planned |
-| Exact Diffusion Inversion via Coupled Transformations (EDICT) | CVPR 2023 | [paper](https://openaccess.thecvf.com/content/CVPR2023/html/Wallace_EDICT_Exact_Diffusion_Inversion_via_Coupled_Transformations_CVPR_2023_paper.html) | Planned |
-| Accelerated Iterative Diffusion Inversion (AIDI) | ICCV 2023 Oral | [paper](https://openaccess.thecvf.com/content/ICCV2023/html/Pan_Effective_Real_Image_Editing_with_Accelerated_Iterative_Diffusion_Inversion_ICCV_2023_paper.html) | Planned |
-| Prompt Tuning Inversion (PTI) | ICCV 2023 | [paper](https://openaccess.thecvf.com/content/ICCV2023/html/Dong_Prompt_Tuning_Inversion_for_Text-driven_Image_Editing_Using_Diffusion_Models_ICCV_2023_paper.html) | Planned |
-| Real-world Image Variation by ALignment (RIVAL) | NeurIPS 2023 Spotlight | [paper](https://proceedings.neurips.cc/paper_files/paper/2023/hash/61960fdfda4d4e95fa1c1f6e64bfe8bc-Abstract-Conference.html) | Planned |
-| Fixed-Point Inversion (FPI) | ArXiv 2023 | [paper](https://arxiv.org/abs/2312.12540v1) | Planned |
-| On Exact Inversion of DPM-solvers | CVPR 2024 | [paper](https://openaccess.thecvf.com/content/CVPR2024/html/Hong_On_Exact_Inversion_of_DPM-Solvers_CVPR_2024_paper.html) | Planned |
-| Tuning-free Inversion-enhanced Control (TIC) | AAAI 2024 | [paper](https://ojs.aaai.org/index.php/AAAI/article/view/27931) | Planned |
-| Bi-Directional Integration Approximation (BDIA) | ECCV 2024 Oral | [paper](https://arxiv.org/abs/2307.10829) | Planned |
-| Bidirectional Explicit Linear Multi-step (BELM) | NeurlPS 2024 | [paper](https://arxiv.org/abs/2410.07273) | Planned |
-
 ## 4. Experimental Results
 
 ### 4.1 Benchmark Performance
 
 Our TRDI algorithm has been extensively evaluated on two major benchmarks:
 
-#### Image Editing Performance (PIEBench)
+#### Image Editing Performance (PIEBench) for SDXL
 | Method | Structure | Background PSNR | Edited CLIP | Results |
 |--------|----------|----------|---------------|-------------|
-| DDIM Inversion |  | [Baseline Score] | [TRDI Score] | [+X%]() |
-| w/ Ours |  | [Baseline Score] | [TRDI Score] | [+X%]() |
-|--------|----------|----------|---------------|-------------|
-| NPI | | [Baseline Score] | [TRDI Score] | [+X%]() |
-| w/ Ours |  | [Baseline Score] | [TRDI Score] | [+X%]() |
-|--------|----------|----------|---------------|-------------|
-| ReNoise | | [Baseline Score] | [TRDI Score] | [+X%]() |
-| w/ Ours |  | [Baseline Score] | [TRDI Score] | [+X%]() |
-|--------|----------|----------|---------------|-------------|
-| GNRI | | [Baseline Score] | [TRDI Score] | [+X%]() |
-| w/ Ours |  | [Baseline Score] | [TRDI Score] | [+X%]() |
-|--------|----------|----------|---------------|-------------|
+| DDIM    | 19.43 | 26.26 | 20.98 | [Results]() |
+| w/ Ours | 15.63 | 26.53 | 21.09 | [Results]() |
+| ReNoise | 27.81 | 25.70 | 21.03 | [Results]() |
+| w/ Ours | 27.64 | 25.81 | 21.09 | [Results]() |
+| NPI     | 19.43 | 26.26 | 20.98 | [Results]() |
+| w/ Ours | 16.36 | 26.54 | 21.10 | [Results]() |
+| GNRI    | 41.66 | 21.84 | 21.79 | [Results]() |
+| w/ Ours | 39.82 | 22.21 | 21.82 | [Results]() |
+
+#### Other results are in [Results]()
 
 ### 4.2 Key Findings
 
@@ -100,12 +83,21 @@ Our TRDI algorithm has been extensively evaluated on two major benchmarks:
 ### Basic Usage with TRDI
 
 ```python
+import argparse
 from TRDI import TRDI
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--guidance_scale", type=float, default=0.0)
+parser.add_argument('--spacing', default=1.00, type=float)
+parser.add_argument('--trdi_window', type=int, default=1) 
+args = parser.parse_args()
 
 trdi = TRDI(args.num_inference_steps, spacing=args.spacing, window=args.trdi_window)
 timesteps = trdi.init_timesteps("leading")
 timesteps = trdi.rescaling_timesteps(timesteps)
 timesteps = trdi.reschedule(timesteps)
+
+...
 
 #### for inversion ####
 inv_result = pipe.inverse(
@@ -201,19 +193,15 @@ If you use this codebase or our TRDI algorithm in your research, please cite:
   howpublished = {https://github.com/sunshangquan/TRDI},
   year = {2024},
 }
+@misc{chen2024inversion,
+  title = {Diffusion Inversion Methods},
+  author = {Chen, Weiming},
+  howpublished = {https://github.com/wmchen/diffusion-inversion},
+  year = {2024},
+}
 ```
 
-## 7. License
+## 7. License and Acknowledge
 
 This project is intended for research use only, licensed under the [Apache-2.0 license](https://www.apache.org/licenses/LICENSE-2.0).
-```
-
-主要修改点：
-
-1. **突出TRDI算法**：在标题和介绍中强调你的核心贡献
-2. **重新组织方法表格**：横轴为benchmark，纵轴为四个核心方法及其TRDI增强版本
-3. **实验结果展示**：专门章节展示在PIEBench和COCO上的性能对比
-4. **使用说明**：提供TRDI的具体使用方法和参数说明
-5. **清晰的改进展示**：用表格形式直观显示TRDI带来的性能提升
-
-你需要将 `[Baseline Score]`, `[TRDI Score]`, `[+X%]` 等占位符替换为实际的实验结果数据。
+Many thanks to the prior works [diffusers](https://github.com/huggingface/diffusers) and [diffusion-inversion](https://github.com/wmchen/diffusion-inversion).
