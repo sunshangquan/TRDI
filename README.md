@@ -54,9 +54,7 @@ Please refer to [exp/](./exp/unet_based) for a quick start on using TRDI with di
 
 ## 4. Experimental Results
 
-### 4.1 Benchmark Performance
-
-Our TRDI algorithm has been extensively evaluated on two major benchmarks:
+Our TRDI algorithm has been extensively evaluated on the major benchmarks [PIE-Benchmark](https://github.com/cure-lab/PnPInversion) :
 
 #### Image Editing Performance (PIEBench) for SDXL
 | Method | Structure | Background PSNR | Edited CLIP | Results |
@@ -71,12 +69,6 @@ Our TRDI algorithm has been extensively evaluated on two major benchmarks:
 | w/ Ours | 39.82 | 22.21 | 21.82 | [Results]() |
 
 #### Other results are in [Results]()
-
-### 4.2 Key Findings
-
-- **Consistent Improvement**: TRDI enhances all four inversion methods across both benchmarks
-- **Robust Performance**: Improvements observed in both image editing and reconstruction tasks
-- **Plug-and-Play Nature**: Easy integration without major architectural changes
 
 ## 5. Usage
 
@@ -182,7 +174,22 @@ CUDA_VISIBLE_DEVICES=0 python exp/unet_based/gnri.py --spacing 1.00 --num_infere
 # GNRI Inversion w/ Ours
 CUDA_VISIBLE_DEVICES=0 python exp/unet_based/gnri.py --spacing 1.05 --num_inference_steps 4 --model_type SDXL --trdi_window 50 --guidance_scale 1.0; 
 ```
-## 6. Citation
+
+## 6. Evaluation
+```bash
+# for editing
+CUDA_VISIBLE_DEVICES=0 python evaluate_my.py --metrics "structure_distance" "psnr_unedit_part" "lpips_unedit_part" "mse_unedit_part" "ssim_unedit_part" "clip_similarity_source_image" "clip_similarity_target_image" "clip_similarity_target_image_edit_part" \
+  --edit_category_list 0 1 2 3 4 5 6 7 8 9 \
+  --annotation_images \
+  --tgt_methods "[ROOT_PATH]res_paper/pie-bench/[FOLDER_NAME]"  ;
+
+# for reconstruction
+CUDA_VISIBLE_DEVICES=0 python evaluate_coco.py \
+    --metrics "psnr" "ssim" "lpips" "mse" --tgt_path input --tgt_methods "[ROOT_PATH]/res_paper/coco/FOLDER_NAME" ;
+
+```
+
+## 7. Citation
 
 If you use this codebase or our TRDI algorithm in your research, please cite:
 
@@ -201,7 +208,7 @@ If you use this codebase or our TRDI algorithm in your research, please cite:
 }
 ```
 
-## 7. License and Acknowledge
+## 8. License and Acknowledge
 
 This project is intended for research use only, licensed under the [Apache-2.0 license](https://www.apache.org/licenses/LICENSE-2.0).
 Many thanks to the prior works [diffusers](https://github.com/huggingface/diffusers) and [diffusion-inversion](https://github.com/wmchen/diffusion-inversion).
