@@ -1,0 +1,71 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local datasets, checkpoints, and generated outputs
+data/
+input/
+res_*/
+final_reports/
+outputs/
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+
+# Local run logs
+*.log
+*.out
+*.nohup
+nohup.out
+
+# Local experiment/search launchers kept out of the public source tree
+scripts/run_main_edit_search_missing7*.sh
+scripts/run_sd15_*.sh
+scripts/run_renoise_*.sh
+scripts/run_additional_*.sh
+scripts/run_experiment*.sh
+scripts/wait_*.sh
+scripts/watch_*.sh
+scripts/night_*.sh
+scripts/queue_*.sh
+scripts/verify_*.sh
+scripts/resume_*.sh
+scripts/launch_*.sh
+scripts/*gpu*.sh
+scripts/auto_run_*.sh
+scripts/evaluate_renoise_best_full_local.sh
+scripts/run_best_renoise_full_after_search.sh
+scripts/run_icml_sdxl_renoise_gs135_full.sh
+scripts/run_recon_*.sh
+scripts/run_ddim_proxy_validity*.sh
+scripts/summarize_renoise_trdi_schedule_search.py
+scripts/build_additional_*.py
+scripts/build_experiment*.py
+scripts/evaluate_experiment*.py
+scripts/merge_experiment1_resume.py
+scripts/reproduce_icml_main_table.py
+exp/unet_based/*experiment*.py
+exp/unet_based/*proxy*.py
+exp/unet_based/*recon*.py
+exp/unet_based/solver_experiment3.py
+
+# Notebooks / editor / OS
+.ipynb_checkpoints/
+.idea/
+.vscode/
+.DS_Store
+
+# Local handoff/debug notes
+RESTART_HANDOFF_TRDI.md
+tmp.py

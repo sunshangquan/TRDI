@@ -4,7 +4,9 @@ from PIL import Image
 
 
 def is_float16(model_type):
-    if model_type == "SDXLv1.0":
+    if model_type == "SDXL":
+        return True
+    elif model_type == "SDXLv1.0":
         return True
     elif model_type == "SDXL_Turbo":
         return True
@@ -18,6 +20,7 @@ def is_float16(model_type):
         return False
     elif model_type == "Model_Type.SD21_Turbo":
         return False
+    return False
 
 def pil2tensor(image: Image.Image, normalize: bool = False):
     """pillow image to tensor

@@ -3,6 +3,7 @@ from torchvision.transforms import Resize
 from torchvision import transforms
 import torch.nn.functional as F
 import numpy as np
+import os
 from torchmetrics.multimodal import CLIPScore
 from torchmetrics.image import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
@@ -272,7 +273,16 @@ class LossG(torch.nn.Module):
 class MetricsCalculator:
     def __init__(self, device) -> None:
         self.device=device
-        self.clip_metric_calculator = CLIPScore(model_name_or_path="/data/.cache/huggingface/hub/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/").to(device)
+        clip_model_name_or_path = os.environ.get("CLIP_MODEL_NAME_OR_PATH")
+        if not clip_model_name_or_path:
+            default_candidates = [
+                "/data/.cache/huggingface/hub/models--openai--clip-vit-large-patch14/snapshots/32bd64288804d66eefd0ccbe215aa642df71cc41/",
+            ]
+            clip_model_name_or_path = next(
+                (path for path in default_candidates if os.path.isdir(path)),
+                "openai/clip-vit-large-patch14",
+            )
+        self.clip_metric_calculator = CLIPScore(model_name_or_path=clip_model_name_or_path).to(device)
         self.psnr_metric_calculator = PeakSignalNoiseRatio(data_range=1.0).to(device)
         self.lpips_metric_calculator = LearnedPerceptualImagePatchSimilarity(net_type='squeeze').to(device)
         self.mse_metric_calculator = MeanSquaredError().to(device)
@@ -404,4 +414,3 @@ class MetricsCalculator:
         structure_distance = self.structure_distance_metric_calculator.calculate_global_ssim_loss(img_gt, img_pred)
         
         return structure_distance.data.cpu().numpy()
-

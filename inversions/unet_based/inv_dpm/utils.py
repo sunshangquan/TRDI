@@ -41,6 +41,9 @@ class StepScheduler(ReduceLROnPlateau):
                              threshold_mode=threshold_mode)
         self._reset()
 
+    def is_better(self, current, best):
+        return self._is_better(current, best)
+
     def step(self, metrics, epoch=None):
         # convert `metrics` to float, in case it's a zero-dim Tensor
         current = float(metrics)

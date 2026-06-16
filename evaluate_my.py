@@ -9,7 +9,10 @@ CURRENT_DIR = os.path.split(os.path.abspath(__file__))[0]  # 当前目录
 config_path = CURRENT_DIR.rsplit('/', 1)[0]  # 上三级目录
 sys.path.append(config_path)
 
-from evaluation.matrics_calculator import MetricsCalculator
+try:
+    from evaluation.matrics_calculator import MetricsCalculator
+except ModuleNotFoundError:
+    from matrics_calculator import MetricsCalculator
 
 def mask_decode(encoded_mask,image_shape=[512,512]):
     length=image_shape[0]*image_shape[1]
@@ -200,6 +203,9 @@ if __name__=="__main__":
 
             tgt_image_path=os.path.join(tgt_image_folder, base_image_path)
             print(f"evluating method: {tgt_image_folder}")
+            if not os.path.exists(tgt_image_path):
+                print(f"warning: skip missing target image {tgt_image_path}")
+                continue
             
             tgt_image = Image.open(tgt_image_path)
             if tgt_image.size[0] != tgt_image.size[1]:

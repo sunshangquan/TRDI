@@ -2,7 +2,7 @@ from typing import Union, Optional, Tuple, Callable, List, Dict, Any
 
 import torch
 from PIL import Image
-from diffusers import StableDiffusionXLPipeline, DPMSolverMultistepScheduler, DPMSolverMultistepInverseScheduler
+from diffusers import StableDiffusionXLPipeline, DPMSolverMultistepScheduler
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import retrieve_timesteps, rescale_noise_cfg
 from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffusionXLPipelineOutput
 from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
@@ -11,6 +11,7 @@ from diffusers.utils import deprecate
 from transformers import get_cosine_schedule_with_warmup
 from mlcbase import EmojiProgressBar
 
+from .scheduler import CustomDPMSolverMultistepInverseScheduler
 from .utils import InversionPipelineOutput, StepScheduler, load_image_from_path, image2latents, latents2image, pil2tensor
 
 
@@ -208,7 +209,7 @@ class SDXLInversionPipeline(StableDiffusionXLPipeline):
             trained_betas=None,
             solver_order=solver_order,
         )
-        self.scheduler_inverse = DPMSolverMultistepInverseScheduler(
+        self.scheduler_inverse = CustomDPMSolverMultistepInverseScheduler(
             beta_end=0.012,
             beta_schedule='scaled_linear',
             beta_start=0.00085,
@@ -812,4 +813,3 @@ class SDXLInversionPipeline(StableDiffusionXLPipeline):
             return (image,)
 
         return StableDiffusionXLPipelineOutput(images=image)
-

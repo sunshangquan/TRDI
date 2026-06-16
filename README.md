@@ -155,25 +155,35 @@ CUDA_VISIBLE_DEVICES=0 python exp/unet_based/gnri.py --spacing 1.05 --num_infere
 #### SDXL Turbo
 ```bash
 # DDIM Inversion
-CUDA_VISIBLE_DEVICES=0 python exp/unet_based/ddim.py --spacing 1.00 --num_inference_steps 4 --model_type SDXL --trdi_window 0 --guidance_scale 1.0; 
+CUDA_VISIBLE_DEVICES=0 python exp/unet_based/ddim.py --spacing 1.00 --num_inference_steps 4 --model_type SDXL_Turbo --trdi_window 0 --guidance_scale 1.0; 
 # DDIM Inversion w/ Ours
-CUDA_VISIBLE_DEVICES=0 python exp/unet_based/ddim.py --spacing 0.90 --num_inference_steps 4 --model_type SDXL --trdi_window 50 --guidance_scale 1.0; 
+CUDA_VISIBLE_DEVICES=0 python exp/unet_based/ddim.py --spacing 0.90 --num_inference_steps 4 --model_type SDXL_Turbo --trdi_window 50 --guidance_scale 1.0; 
 
 # ReNoise Inversion
-CUDA_VISIBLE_DEVICES=0 python exp/unet_based/renoise.py --spacing 1.00 --num_inference_steps 4 --model_type SDXL --trdi_window 0 --guidance_scale 1.0; 
+CUDA_VISIBLE_DEVICES=0 python exp/unet_based/renoise.py --spacing 1.00 --num_inference_steps 4 --model_type SDXL_Turbo --trdi_window 0 --guidance_scale 1.0; 
 # ReNoise Inversion w/ Ours
-CUDA_VISIBLE_DEVICES=0 python exp/unet_based/renoise.py --spacing 0.85 --num_inference_steps 4 --model_type SDXL --trdi_window 0 --guidance_scale 1.0; 
+CUDA_VISIBLE_DEVICES=0 python exp/unet_based/renoise.py --spacing 0.85 --num_inference_steps 4 --model_type SDXL_Turbo --trdi_window 0 --guidance_scale 1.0; 
 
 # NPI Inversion
-CUDA_VISIBLE_DEVICES=0 python exp/unet_based/npi.py --spacing 1.00 --num_inference_steps 4 --model_type SDXL --trdi_window 0 --guidance_scale 1.0; 
+CUDA_VISIBLE_DEVICES=0 python exp/unet_based/npi.py --spacing 1.00 --num_inference_steps 4 --model_type SDXL_Turbo --trdi_window 0 --guidance_scale 1.0; 
 # NPI Inversion w/ Ours
-CUDA_VISIBLE_DEVICES=0 python exp/unet_based/npi.py --spacing 1.05 --num_inference_steps 4 --model_type SDXL --trdi_window 25 --guidance_scale 1.0; 
+CUDA_VISIBLE_DEVICES=0 python exp/unet_based/npi.py --spacing 1.05 --num_inference_steps 4 --model_type SDXL_Turbo --trdi_window 25 --guidance_scale 1.0; 
 
 # GNRI Inversion
-CUDA_VISIBLE_DEVICES=0 python exp/unet_based/gnri.py --spacing 1.00 --num_inference_steps 4 --model_type SDXL --trdi_window 0 --guidance_scale 1.0;
+CUDA_VISIBLE_DEVICES=0 python exp/unet_based/gnri.py --spacing 1.00 --num_inference_steps 4 --model_type SDXL_Turbo --trdi_window 0 --guidance_scale 1.0;
 # GNRI Inversion w/ Ours
-CUDA_VISIBLE_DEVICES=0 python exp/unet_based/gnri.py --spacing 1.05 --num_inference_steps 4 --model_type SDXL --trdi_window 50 --guidance_scale 1.0; 
+CUDA_VISIBLE_DEVICES=0 python exp/unet_based/gnri.py --spacing 1.05 --num_inference_steps 4 --model_type SDXL_Turbo --trdi_window 50 --guidance_scale 1.0; 
 ```
+
+### Reproduction runners
+
+For reproducible batch runs, use:
+
+- `scripts/run_icml_main_case_from_scratch.py` for PIE-Bench editing.
+- `scripts/run_icml_recon_case_from_scratch.py` for COCO-style reconstruction.
+- `scripts/build_icml_main_table_from_run.py`, `scripts/build_icml_recon_table_from_run.py`, and `scripts/build_icml_ablation_table_from_run.py` to aggregate evaluation CSVs into tables.
+
+See [REPRODUCE.md](REPRODUCE.md) for expected input formats and example commands.
 
 ## 6. Evaluation
 ```bash

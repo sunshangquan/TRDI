@@ -188,9 +188,6 @@ class SDXLInversionPipeline(StableDiffusionXLPipeline):
             ip_adapter_image_embeds,
             callback_on_step_end_tensor_inputs,
         )
-        if guidance_scale > 1.0:
-            print("Force guidance_scale to 0.0 when guidance_scale > 1.0")
-            guidance_scale = 0.0
         self._guidance_scale = guidance_scale
         self._guidance_rescale = guidance_rescale
         self._clip_skip = clip_skip
