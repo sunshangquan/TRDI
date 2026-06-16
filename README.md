@@ -58,29 +58,24 @@ Please refer to the [paper](https://arxiv.org/abs/2606.15389) for the complete q
 
 The following examples show the same input edited with a baseline inversion method and with TRDI-enabled timestep rescheduling.
 
-![TRDI qualitative example: remove the flower](assets/qualitative_examples/sdxl_npi_candidate_1_313000000007.jpg)
-*Prompt: remove the flower*
-
-![TRDI qualitative example: snow covered road](assets/qualitative_examples/sdxl_npi_candidate_3_824000000004.jpg)
-*Prompt: Change the road to a snow covered one*
-
-![TRDI qualitative example: blue background](assets/qualitative_examples/sdxl_renoise_candidate_3_811000000007.jpg)
-*Prompt: Add a blue background to the cat with paint on its head*
-
-![TRDI qualitative example: red dress](assets/qualitative_examples/sdxl_renoise_candidate_2_622000000001.jpg)
-*Prompt: Change the woman's dress color to red*
-
-![TRDI qualitative example: bright background](assets/qualitative_examples/sdxl_npi_candidate_4_613000000002.jpg)
-*Prompt: Make the background bright rather than dark*
-
-![TRDI qualitative example: squirrel reading a book](assets/qualitative_examples/sdxl_ddim_candidate_3_221000000008.jpg)
-*Prompt: Make the red squirrel reading a book*
-
-![TRDI qualitative example: squirrel reading a book](assets/qualitative_examples/sdxl_gnri_candidate_3_221000000008.jpg)
-*Prompt: Make the red squirrel reading a book*
-
-![TRDI qualitative example: snow covered road](assets/qualitative_examples/sdxl_ddim_candidate_4_824000000004.jpg)
-*Prompt: Change the road to a snow covered one*
+<table>
+  <tr>
+    <td width="50%"><img src="assets/qualitative_examples/sdxl_npi_candidate_1_313000000007.jpg" alt="TRDI qualitative example: remove the flower"><br><sub>Prompt: remove the flower</sub></td>
+    <td width="50%"><img src="assets/qualitative_examples/sdxl_npi_candidate_3_824000000004.jpg" alt="TRDI qualitative example: snow covered road"><br><sub>Prompt: Change the road to a snow covered one</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/qualitative_examples/sdxl_renoise_candidate_3_811000000007.jpg" alt="TRDI qualitative example: blue background"><br><sub>Prompt: Add a blue background to the cat with paint on its head</sub></td>
+    <td width="50%"><img src="assets/qualitative_examples/sdxl_renoise_candidate_2_622000000001.jpg" alt="TRDI qualitative example: red dress"><br><sub>Prompt: Change the woman's dress color to red</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/qualitative_examples/sdxl_npi_candidate_4_613000000002.jpg" alt="TRDI qualitative example: bright background"><br><sub>Prompt: Make the background bright rather than dark</sub></td>
+    <td width="50%"><img src="assets/qualitative_examples/sdxl_ddim_candidate_3_221000000008.jpg" alt="TRDI qualitative example: squirrel reading a book"><br><sub>Prompt: Make the red squirrel reading a book</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/qualitative_examples/sdxl_gnri_candidate_3_221000000008.jpg" alt="TRDI qualitative example: squirrel reading a book"><br><sub>Prompt: Make the red squirrel reading a book</sub></td>
+    <td width="50%"><img src="assets/qualitative_examples/sdxl_ddim_candidate_4_824000000004.jpg" alt="TRDI qualitative example: snow covered road"><br><sub>Prompt: Change the road to a snow covered one</sub></td>
+  </tr>
+</table>
 
 ## 5. Usage
 
