@@ -203,12 +203,6 @@ If you use this codebase or our TRDI algorithm in your research, please cite:
       primaryClass={cs.CV},
       url={https://arxiv.org/abs/2606.15389}, 
 }
-@misc{chen2024inversion,
-  title = {Diffusion Inversion Methods},
-  author = {Chen, Weiming},
-  howpublished = {https://github.com/wmchen/diffusion-inversion},
-  year = {2024},
-}
 ```
 
 ## 8. License and Acknowledge
