@@ -1,10 +1,10 @@
-# Codes of Time-step Rescheduling in Diffusion Inversion (TRDI)
+# Codes of Timestep Rescheduling in Diffusion Inversion (TRDI)
 
-This repository is a collection of diffusion inversion methods with our proposed **Time-step Rescheduling in Diffusion Inversion (TRDI)** algorithm. We implemented all mentioned methods in the repository using [diffusers](https://github.com/huggingface/diffusers), [diffusion-inversion](https://github.com/wmchen/diffusion-inversion) and extended them with our TRDI enhancement.
+This repository is a collection of diffusion inversion methods with our proposed **Timestep Rescheduling in Diffusion Inversion (TRDI)** algorithm. We implemented all mentioned methods in the repository using [diffusers](https://github.com/huggingface/diffusers), [diffusion-inversion](https://github.com/wmchen/diffusion-inversion) and extended them with our TRDI enhancement.
 
 ## 🚀 Key Features
 
-- **TRDI Algorithm**: Our proposed Time-step Rescheduling method that enhances existing diffusion inversion techniques
+- **TRDI Algorithm**: Our proposed timestep rescheduling method that enhances existing diffusion inversion techniques
 - **Comprehensive Benchmarks**: Extensive evaluation on PIEBench and COCO datasets
 - **Multiple Applications**: Support for both image editing and image reconstruction tasks
 - **Plug-and-Play**: Easy integration with existing inversion methods
@@ -52,23 +52,13 @@ Please refer to [exp/](./exp/unet_based) for a quick start on using TRDI with di
 | ReNoise | ✓ | ✅ Improved | ✅ Improved | [code](./inversions/unet_based/renoise) |
 | Guided Newton Raphson Inversion (GNRI) | ✓ | ✅ Improved | ✅ Improved | [code](./inversions/unet_based/gnri) |
 
-## 4. Experimental Results
+## 4. Qualitative Examples
 
-Our TRDI algorithm has been extensively evaluated on the major benchmarks [PIE-Benchmark](https://github.com/cure-lab/PnPInversion) :
+Please refer to the [paper](https://arxiv.org/abs/2606.15389) for the complete quantitative results. We do not duplicate numerical tables here to avoid version drift between the repository and the paper.
 
-#### Image Editing Performance (PIEBench) for SDXL
-| Method | Structure | Background PSNR | Edited CLIP | Results |
-|--------|----------|----------|---------------|-------------|
-| DDIM    | 19.43 | 26.26 | 20.98 | [Results]() |
-| w/ Ours | 15.63 | 26.53 | 21.09 | [Results]() |
-| ReNoise | 27.81 | 25.70 | 21.03 | [Results]() |
-| w/ Ours | 27.64 | 25.81 | 21.09 | [Results]() |
-| NPI     | 19.43 | 26.26 | 20.98 | [Results]() |
-| w/ Ours | 16.36 | 26.54 | 21.10 | [Results]() |
-| GNRI    | 41.66 | 21.84 | 21.79 | [Results]() |
-| w/ Ours | 39.82 | 22.21 | 21.82 | [Results]() |
+The following examples show the same input edited with a baseline inversion method and with TRDI-enabled timestep rescheduling.
 
-#### Other results are in [Results]()
+![TRDI qualitative comparison](assets/trdi_qualitative_comparison.jpg)
 
 ## 5. Usage
 
@@ -204,11 +194,14 @@ CUDA_VISIBLE_DEVICES=0 python evaluate_coco.py \
 If you use this codebase or our TRDI algorithm in your research, please cite:
 
 ```bibtex
-@misc{TRDI2024,
-  title = {Time-step Rescheduling in Diffusion Inversion (TRDI)},
-  author = {Sun, Shangquan and Contributors},
-  howpublished = {https://github.com/sunshangquan/TRDI},
-  year = {2024},
+@misc{sun2026timestepreschedulingdiffusioninversion,
+      title={Timestep Rescheduling in Diffusion Inversion}, 
+      author={Shangquan Sun and Ting Gong and Zhirui Liu and Jiamin Wu and Runkai Zhao and Mianxin Liu and Wenqi Ren and Xiaochun Cao},
+      year={2026},
+      eprint={2606.15389},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2606.15389}, 
 }
 @misc{chen2024inversion,
   title = {Diffusion Inversion Methods},
