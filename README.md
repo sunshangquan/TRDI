@@ -192,6 +192,28 @@ For reproducible batch runs, use:
 
 See [REPRODUCE.md](REPRODUCE.md) for expected input formats and example commands.
 
+### Research extension scripts
+
+The repository also includes experimental utilities for the confidence-gated
+adaptive TRDI extension:
+
+- `AdaptiveTRDI` in [TRDI.py](TRDI.py) provides deterministic analytic schedule
+  variants such as `noise_floor50`, `noise_floor75`, and `late`.
+- `scripts/run_tpami_backbone_full700.py` launches TRDI, adaptive candidates,
+  confidence-gated selectors, evaluation, and summaries for a chosen inversion
+  backbone.
+- `scripts/run_tpami_selector_ablations.py` runs selector ablations once the
+  candidate image roots are available.
+- `scripts/summarize_tpami_extension.py` builds aggregate and category-level
+  summaries from evaluation CSVs.
+- `scripts/build_tpami_tables.py` converts audited local summaries into CSV,
+  Markdown, LaTeX, and Excel tables. Pass `--source_dir` and `--output_dir`
+  to use your own summary JSON directory.
+
+These scripts are intended for reproducible research runs. Generated reports
+and tables are not committed because they depend on local benchmark paths and
+may drift from the paper camera-ready numbers.
+
 ## 6. Evaluation
 ```bash
 # for editing

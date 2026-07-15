@@ -49,6 +49,8 @@ scripts/run_best_renoise_full_after_search.sh
 scripts/run_icml_sdxl_renoise_gs135_full.sh
 scripts/run_recon_*.sh
 scripts/run_ddim_proxy_validity*.sh
+scripts/run_tpami_crosscat_probe.py
+scripts/run_tpami_full700_select_eval.py
 scripts/summarize_renoise_trdi_schedule_search.py
 scripts/build_additional_*.py
 scripts/build_experiment*.py

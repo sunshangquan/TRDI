@@ -21,7 +21,7 @@ from skimage.metrics import structural_similarity as ssim
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from TRDI import TRDI  # noqa: E402
+from TRDI import AdaptiveTRDI, TRDI  # noqa: E402
 from inversions.utils import is_float16, pil2tensor  # noqa: E402
 
 
@@ -31,6 +31,26 @@ MODEL_IDS = {
     "SDXL": "stabilityai/stable-diffusion-xl-base-1.0",
     "SDXL_Turbo": "stabilityai/sdxl-turbo",
 }
+
+SCHEDULE_MODES = [
+    "trdi",
+    "adaptive_balanced",
+    "adaptive_noise",
+    "adaptive_noise_floor25",
+    "adaptive_noise_floor50",
+    "adaptive_noise_floor75",
+    "adaptive_logsnr",
+    "adaptive_curvature",
+    "adaptive_late",
+    "adaptive_match_balanced",
+    "adaptive_match_noise",
+    "adaptive_match_noise_floor25",
+    "adaptive_match_noise_floor50",
+    "adaptive_match_noise_floor75",
+    "adaptive_match_logsnr",
+    "adaptive_match_curvature",
+    "adaptive_match_late",
+]
 
 
 def parse_float_list(value):
@@ -50,6 +70,13 @@ def parse_args():
     parser.add_argument("--num_inference_steps", type=int, default=50)
     parser.add_argument("--spacing", type=float, default=1.0)
     parser.add_argument("--trdi_window", type=int, default=0)
+    parser.add_argument(
+        "--schedule_mode",
+        choices=SCHEDULE_MODES,
+        default="trdi",
+    )
+    parser.add_argument("--inverse_schedule_mode", choices=SCHEDULE_MODES, default=None)
+    parser.add_argument("--generation_schedule_mode", choices=SCHEDULE_MODES, default=None)
     parser.add_argument("--guidance_scale", type=float, default=2.0)
     parser.add_argument("--inverse_guidance_scale", type=float, default=None)
     parser.add_argument("--manifest_path", default=str(ROOT / "data/manifests/coco_input_subset_100.json"))
@@ -75,11 +102,23 @@ def parse_args():
     return parser.parse_args()
 
 
-def get_timesteps(num_inference_steps, spacing, window):
+def get_trdi_timesteps(num_inference_steps, spacing, window):
     trdi = TRDI(num_inference_steps, spacing=spacing, window=window)
     timesteps = trdi.init_timesteps("leading")
     timesteps = trdi.rescaling_timesteps(timesteps)
     return trdi.reschedule(timesteps)
+
+
+def get_timesteps(num_inference_steps, spacing, window, schedule_mode):
+    if schedule_mode == "trdi":
+        return get_trdi_timesteps(num_inference_steps, spacing, window)
+    bounds = None
+    density_mode = schedule_mode.replace("adaptive_", "")
+    if density_mode.startswith("match_"):
+        base_timesteps = get_trdi_timesteps(num_inference_steps, spacing, window)
+        bounds = (min(base_timesteps), max(base_timesteps))
+        density_mode = density_mode.replace("match_", "", 1)
+    return AdaptiveTRDI(num_inference_steps, density_mode=density_mode).get_timesteps_adaptive(bounds=bounds)
 
 
 def load_pipeline(args):
@@ -107,7 +146,7 @@ def load_pipeline(args):
     return pipe.to(args.device)
 
 
-def inverse_and_reconstruct(args, pipe, image_path, prompt, timesteps):
+def inverse_and_reconstruct(args, pipe, image_path, prompt, inverse_timesteps, generation_timesteps):
     if args.method == "renoise":
         inv_result = pipe.inverse(
             image=str(image_path),
@@ -123,7 +162,7 @@ def inverse_and_reconstruct(args, pipe, image_path, prompt, timesteps):
             prompt=prompt,
             guidance_scale=args.inverse_guidance_scale if args.inverse_guidance_scale is not None else args.guidance_scale,
             num_inference_steps=args.num_inference_steps,
-            timesteps=timesteps,
+            timesteps=inverse_timesteps,
         )
     else:
         inverse_guidance = 0.0 if args.method == "ddim" else args.guidance_scale
@@ -141,7 +180,7 @@ def inverse_and_reconstruct(args, pipe, image_path, prompt, timesteps):
             prompt=prompt,
             guidance_scale=inverse_guidance,
             num_inference_steps=args.num_inference_steps,
-            timesteps=timesteps,
+            timesteps=inverse_timesteps,
             **inverse_kwargs,
         )
     recon = pipe(
@@ -149,7 +188,7 @@ def inverse_and_reconstruct(args, pipe, image_path, prompt, timesteps):
         num_inference_steps=args.num_inference_steps,
         guidance_scale=args.guidance_scale,
         latents=inv_result.zT,
-        timesteps=timesteps,
+        timesteps=generation_timesteps,
     ).images[0]
     return inv_result.ori_image, recon
 
@@ -183,7 +222,18 @@ def main():
     if args.max_samples is not None:
         records = records[: args.max_samples]
 
-    timesteps = get_timesteps(args.num_inference_steps, args.spacing, args.trdi_window)
+    inverse_schedule_mode = args.inverse_schedule_mode or args.schedule_mode
+    generation_schedule_mode = args.generation_schedule_mode or args.schedule_mode
+    inverse_timesteps = get_timesteps(args.num_inference_steps, args.spacing, args.trdi_window, inverse_schedule_mode)
+    generation_timesteps = get_timesteps(args.num_inference_steps, args.spacing, args.trdi_window, generation_schedule_mode)
+    args_dict = vars(args).copy()
+    args_dict["inverse_schedule_mode"] = inverse_schedule_mode
+    args_dict["generation_schedule_mode"] = generation_schedule_mode
+    args_dict["inverse_timesteps"] = inverse_timesteps
+    args_dict["generation_timesteps"] = generation_timesteps
+    (Path(args.output_root) / args.case_key / "args.json").write_text(
+        json.dumps(args_dict, indent=2), encoding="utf-8"
+    )
     pipe = load_pipeline(args)
     lpips_loss = lpips.LPIPS(net="alex")
 
@@ -198,7 +248,9 @@ def main():
             prompt = record["prompt"]
             file_id = record["id"]
             out_path = output_dir / f"{file_id}.jpg"
-            ori_image, recon_image = inverse_and_reconstruct(args, pipe, image_path, prompt, timesteps)
+            ori_image, recon_image = inverse_and_reconstruct(
+                args, pipe, image_path, prompt, inverse_timesteps, generation_timesteps
+            )
             original_size = Image.open(image_path).size
             recon_image = recon_image.resize(original_size)
             ori_image = ori_image.resize(original_size)
