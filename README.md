@@ -206,6 +206,21 @@ adaptive TRDI extension:
   candidate image roots are available.
 - `scripts/summarize_tpami_extension.py` builds aggregate and category-level
   summaries from evaluation CSVs.
+- `scripts/materialize_selected_candidates.py` creates selector outputs with
+  byte-preserving copies, so fallback images remain exact paired ties.
+- `scripts/paired_significance.py` reports paired bootstrap intervals and
+  Holm-corrected signed-rank tests over PIE-Bench CSVs.
+- `scripts/offline_selector_sensitivity.py` and
+  `scripts/offline_candidate_family_ablation.py` re-rank saved candidate
+  evidence without regenerating images.
+- `scripts/evaluate_pickscore.py` evaluates a held-out preference model that is
+  not used by the selector.
+- `scripts/evaluate_dinov2_identity.py` evaluates held-out DINOv2 source
+  identity without selector signals or edit masks.
+- `scripts/generate_human_study_package.py` creates stratified blinded forms,
+  repeat trials, pixel-identical attention checks, and a separate private
+  randomization manifest; `scripts/analyze_human_study.py` performs unblinding
+  and image-level bootstrap analysis.
 - `scripts/build_tpami_tables.py` converts audited local summaries into CSV,
   Markdown, LaTeX, and Excel tables. Pass `--source_dir` and `--output_dir`
   to use your own summary JSON directory.

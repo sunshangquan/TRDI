@@ -69,6 +69,8 @@ def has_source(name):
 def method_label(method):
     if "_select_safe4sm_" in method:
         return DISPLAY_NAMES["safe"]
+    if "_select_whole_conservative_" in method:
+        return f"{DISPLAY_NAMES['conservative']} (whole)"
     if "_select_strictclip4_" in method:
         return DISPLAY_NAMES["conservative"]
     if "_select_relaxed2_" in method or "_select_balanced4_" in method:
@@ -153,6 +155,156 @@ def metric_row(summary, method, group=None):
     row.append(category_wins(summary, method))
     row.append(switched_count(summary, method))
     return row
+
+
+def full_backbone_generalization_rows():
+    settings = [
+        (
+            "SDXL-DDIM",
+            "ddim_full700_summary.json",
+            [
+                "sdxl_ddim_trdi_full700_tpami_v1",
+                "sdxl_ddim_select_relaxed2_full700_tpami_v1",
+                "sdxl_ddim_select_strictclip4_full700_tpami_v1",
+            ],
+        ),
+        (
+            "SDXL-ReNoise",
+            "renoise_full700_category_summary.json",
+            [
+                "sdxl_renoise_trdi_full700_tpami_v1",
+                "sdxl_renoise_select_balanced4_full700_tpami_v1",
+                "sdxl_renoise_select_strictclip4_full700_tpami_v1",
+                "sdxl_renoise_select_safe4sm_full700_tpami_v1",
+            ],
+        ),
+        (
+            "SDXL-GNRI",
+            "gnri_full700_category_summary.json",
+            [
+                "sdxl_gnri_trdi_full700_tpami_v1",
+                "sdxl_gnri_select_balanced4_full700_tpami_v1",
+                "sdxl_gnri_select_strictclip4_full700_tpami_v1",
+                "sdxl_gnri_select_safe4sm_full700_tpami_v1",
+            ],
+        ),
+    ]
+    header = [
+        "Backbone",
+        "Method",
+        *[label for _, label, _ in METRICS],
+        "Agg. wins",
+        "Category wins",
+        "Switched",
+    ]
+    rows = [header]
+    for backbone, source, methods in settings:
+        if not has_source(source):
+            continue
+        summary = read_json(source)
+        for method in methods:
+            rows.append(metric_row(summary, method, backbone))
+    return rows
+
+
+def full_backbone_static_rows():
+    settings = [
+        (
+            "SDXL-DDIM",
+            "ddim_full700_summary.json",
+            [
+                "sdxl_ddim_trdi_full700_tpami_v1",
+                "sdxl_ddim_adaptive_noise_floor50_full700_tpami_v1",
+                "sdxl_ddim_adaptive_noise_floor75_full700_tpami_v1",
+                "sdxl_ddim_adaptive_late_full700_tpami_v1",
+            ],
+        ),
+        (
+            "SDXL-ReNoise",
+            "renoise_full700_category_summary.json",
+            [
+                "sdxl_renoise_trdi_full700_tpami_v1",
+                "sdxl_renoise_adaptive_noise_floor50_full700_tpami_v1",
+                "sdxl_renoise_adaptive_noise_floor75_full700_tpami_v1",
+                "sdxl_renoise_adaptive_late_full700_tpami_v1",
+            ],
+        ),
+        (
+            "SDXL-GNRI",
+            "gnri_full700_category_summary.json",
+            [
+                "sdxl_gnri_trdi_full700_tpami_v1",
+                "sdxl_gnri_adaptive_noise_floor50_full700_tpami_v1",
+                "sdxl_gnri_adaptive_noise_floor75_full700_tpami_v1",
+                "sdxl_gnri_adaptive_late_full700_tpami_v1",
+            ],
+        ),
+    ]
+    header = [
+        "Backbone",
+        "Method",
+        *[label for _, label, _ in METRICS],
+        "Agg. wins",
+        "Category wins",
+        "Switched",
+    ]
+    rows = [header]
+    for backbone, source, methods in settings:
+        if not has_source(source):
+            continue
+        summary = read_json(source)
+        for method in methods:
+            rows.append(metric_row(summary, method, backbone))
+    return rows
+
+
+def mask_audit_rows():
+    settings = [
+        (
+            "SDXL-DDIM",
+            "ddim_full700_summary.json",
+            "ddim_whole_summary.json",
+            "sdxl_ddim_trdi_full700_tpami_v1",
+            "sdxl_ddim_select_strictclip4_full700_tpami_v1",
+            "sdxl_ddim_select_whole_conservative_full700_tpami_v1",
+        ),
+        (
+            "SDXL-ReNoise",
+            "renoise_full700_category_summary.json",
+            "renoise_whole_summary.json",
+            "sdxl_renoise_trdi_full700_tpami_v1",
+            "sdxl_renoise_select_strictclip4_full700_tpami_v1",
+            "sdxl_renoise_select_whole_conservative_full700_tpami_v1",
+        ),
+        (
+            "SDXL-GNRI",
+            "gnri_full700_category_summary.json",
+            "gnri_whole_summary.json",
+            "sdxl_gnri_trdi_full700_tpami_v1",
+            "sdxl_gnri_select_strictclip4_full700_tpami_v1",
+            "sdxl_gnri_select_whole_conservative_full700_tpami_v1",
+        ),
+    ]
+    rows = [
+        [
+            "Backbone",
+            "Selector input",
+            "Method",
+            *[label for _, label, _ in METRICS],
+            "Agg. wins",
+            "Category wins",
+            "Switched",
+        ]
+    ]
+    for backbone, masked_source, whole_source, baseline, masked, whole in settings:
+        if not has_source(masked_source) or not has_source(whole_source):
+            continue
+        masked_summary = read_json(masked_source)
+        whole_summary = read_json(whole_source)
+        rows.append([backbone, "Baseline", *metric_row(masked_summary, baseline)])
+        rows.append([backbone, "Masked", *metric_row(masked_summary, masked)])
+        rows.append([backbone, "Whole", *metric_row(whole_summary, whole)])
+    return rows
 
 
 def main_table_rows():
@@ -487,50 +639,48 @@ def claim_evidence_rows():
         ["Claim", "Evidence", "Status"],
         [
             "Adaptive schedules expose useful alternatives but are not reliable alone.",
-            "Static schedules are weak on full DDIM and GNRI xcat10, and ReNoise static schedules have only 35-39/70 category wins despite stronger aggregate preservation metrics.",
+            "Static schedules are weak or inconsistent on full DDIM/ReNoise/GNRI; on full GNRI they get 0/7 aggregate wins despite sometimes helping individual categories.",
             "Supported",
         ],
         [
             "Confidence-gated selection is the core stabilizer.",
-            "Balanced/Conservative reach 7/7 aggregate and 70/70 category wins on DDIM full PIE-Bench; score-only/edit-only ablations fail category stability.",
+            "Balanced/Conservative reach 7/7 aggregate and 70/70 category wins on DDIM full PIE-Bench; score-only/edit-only ablations fail category stability. ReNoise and GNRI full runs also recover 7/7 aggregate wins after gating.",
             "Supported",
         ],
         [
             "The method can be transferred beyond the main DDIM setting.",
-            "GNRI xcat10 reaches 7/7 aggregate with the stricter Safe gate; ReNoise xcat10 reaches 7/7 aggregate with Balanced, Conservative, and Safe gates.",
-            "Supported for cross-category probes",
+            "On full PIE-Bench, ReNoise reaches 7/7 aggregate and 68/70 category wins with Balanced/Conservative; GNRI reaches 7/7 aggregate with Conservative/Safe and up to 65/70 category wins with Safe.",
+            "Supported on full ReNoise/GNRI benchmarks",
         ],
         [
             "The Safe gate improves robustness under stress.",
-            "GNRI xcat10 Safe switches 6/100 samples and turns the conservative 6/7 into 7/7 aggregate wins; ReNoise Safe keeps 7/7 aggregate wins while switching 18/100 samples.",
+            "GNRI full Safe switches 55/700 samples, keeps 7/7 aggregate wins, and improves category stability from 56/70 Balanced to 65/70 Safe. ReNoise Safe remains positive on all aggregate metrics while switching 167/700 samples.",
             "Supported as a conservative operating point",
         ],
     ]
-    if has_source("renoise_xcat10_summary.json"):
-        summary = read_json("renoise_xcat10_summary.json")
-        safe = "sdxl_renoise_xcat10_select_safe4sm_xcat10_tpami_v1"
-        conservative = "sdxl_renoise_xcat10_select_strictclip4_xcat10_tpami_v1"
-        balanced = "sdxl_renoise_xcat10_select_balanced4_xcat10_tpami_v1"
-        parts = []
-        for name, method in [
-            ("Balanced", balanced),
-            ("Conservative", conservative),
-            ("Safe", safe),
-        ]:
-            if method in summary["comparison_to_baseline"]:
-                agg = summary["comparison_to_baseline"][method]["wins"]
-                cat = category_wins(summary, method)
-                parts.append(f"{name}: {agg}/7 aggregate, {cat} category")
-        if parts:
-            rows.append(
-                [
-                    "The method transfers to an independently different inversion backbone.",
-                    "ReNoise xcat10 reports "
-                    + "; ".join(parts)
-                    + "; file-hash check versus DDIM found 0/20 matching outputs.",
-                    "Supported on cross-category ReNoise",
-                ]
-            )
+    if all(
+        has_source(name)
+        for name in (
+            "ddim_whole_summary.json",
+            "renoise_whole_summary.json",
+            "gnri_whole_summary.json",
+        )
+    ):
+        rows.append(
+            [
+                "Aggregate gains do not depend on PIE-Bench masks at selection time.",
+                "The whole-image Conservative gate reaches 7/7 aggregate wins on full DDIM, ReNoise, and GNRI, with 68/70, 67/70, and 62/70 category wins.",
+                "Supported by full no-mask audit",
+            ]
+        )
+    if has_source("renoise_full700_category_summary.json") and has_source("gnri_full700_category_summary.json"):
+        rows.append(
+            [
+                "The method is not uniformly category-perfect across every backbone.",
+                "DDIM reaches 70/70 category-metric wins, but ReNoise tops out at 68/70 and GNRI at 65/70 in the current full runs; claims should say broad full-benchmark improvement, not per-category perfection.",
+                "Boundary condition",
+            ]
+        )
     return rows
 
 
@@ -689,6 +839,9 @@ def main():
     SOURCE_DIR = Path(args.source_dir)
     OUTPUT_DIR = Path(args.output_dir)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    full_backbones = full_backbone_generalization_rows()
+    full_static = full_backbone_static_rows()
+    mask_audit = mask_audit_rows()
     main_rows = main_table_rows()
     category_selection = ddim_category_selection_rows()
     npi_duplicate = npi_duplicate_rows()
@@ -699,6 +852,25 @@ def main():
     reconstruction = reconstruction_delta_rows()
     claims = claim_evidence_rows()
 
+    write_table_bundle(
+        "tpami_table_full_backbone_generalization",
+        full_backbones,
+        "Full PIE-Bench backbone generalization. All rows use 700 PIE-Bench images. Category wins count positive metric-category cells against each backbone's TRDI baseline.",
+        "tab:tpami-full-backbone-generalization",
+    )
+    write_table_bundle(
+        "tpami_table_full_backbone_static_schedules",
+        full_static,
+        "Full PIE-Bench static schedule audit across inversion backbones. Static adaptive schedules are candidates for CGA-TRDI, not recommended standalone methods.",
+        "tab:tpami-full-backbone-static-schedules",
+    )
+    if len(mask_audit) > 1:
+        write_table_bundle(
+            "tpami_table_mask_audit",
+            mask_audit,
+            "Full PIE-Bench mask audit. Whole-image selection does not use PIE-Bench annotation masks; evaluation remains unchanged.",
+            "tab:tpami-mask-audit",
+        )
     write_table_bundle(
         "tpami_table_main_full_piebench",
         main_rows,
@@ -752,6 +924,9 @@ def main():
     write_csv(OUTPUT_DIR / "tpami_claim_evidence.csv", claims)
     write_markdown(OUTPUT_DIR / "tpami_claim_evidence.md", claims)
     sheets = [
+        ("Full Backbone Generalization", full_backbones),
+        ("Full Static Schedules", full_static),
+        ("Mask Audit", mask_audit),
         ("Main Full PIE-Bench", main_rows),
         ("DDIM Category Selection", category_selection),
         ("NPI duplicate check", npi_duplicate),
@@ -768,6 +943,15 @@ def main():
         ]
     )
     write_xlsx(OUTPUT_DIR / "tpami_extension_tables.xlsx", sheets)
+    write_xlsx(
+        OUTPUT_DIR / "tpami_full_backbone_tables.xlsx",
+        [
+            ("Full Backbone Generalization", full_backbones),
+            ("Full Static Schedules", full_static),
+            ("Mask Audit", mask_audit),
+            ("Claim Evidence", claims),
+        ],
+    )
     print(f"wrote tables to {OUTPUT_DIR}")
 
 

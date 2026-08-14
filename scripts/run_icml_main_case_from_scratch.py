@@ -5,6 +5,7 @@ import importlib
 import json
 import os
 import random
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -54,6 +55,14 @@ SCHEDULE_MODES = [
 def read_json(path):
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def write_json_atomic(path, value):
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(
+        json.dumps(value, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    os.replace(temporary, path)
 
 
 def clean_prompt(prompt):
@@ -551,13 +560,23 @@ def main():
     completed = 0
     skipped = 0
     failures = []
-    selection_records = []
+    selection_records_path = output_dir / "selection_records.json"
+    selection_records_by_file = {}
+    if candidate_timesteps and selection_records_path.is_file() and not args.overwrite:
+        selection_records_by_file = {
+            record["file"]: record for record in read_json(selection_records_path)
+        }
     start = time.perf_counter()
 
     for index, datum in enumerate(data):
         rel_path = datum["file"]
         dst_path = output_dir / rel_path
-        if dst_path.is_file() and not args.overwrite:
+        has_selection_record = rel_path in selection_records_by_file
+        if (
+            dst_path.is_file()
+            and not args.overwrite
+            and (not candidate_timesteps or has_selection_record)
+        ):
             skipped += 1
             continue
         dst_path.parent.mkdir(parents=True, exist_ok=True)
@@ -583,10 +602,23 @@ def main():
                         if baseline_image_root is not None and schedule_mode == "trdi"
                         else None
                     )
+                    reusable_source_path = None
                     if root_candidate_path is not None and root_candidate_path.is_file():
-                        candidate_image = Image.open(root_candidate_path).convert("RGB").resize(original_size)
+                        with Image.open(root_candidate_path) as source_candidate:
+                            source_size = source_candidate.size
+                            candidate_image = source_candidate.convert("RGB")
+                        if source_size == original_size:
+                            reusable_source_path = root_candidate_path
+                        else:
+                            candidate_image = candidate_image.resize(original_size)
                     elif baseline_candidate_path is not None and baseline_candidate_path.is_file():
-                        candidate_image = Image.open(baseline_candidate_path).convert("RGB").resize(original_size)
+                        with Image.open(baseline_candidate_path) as source_candidate:
+                            source_size = source_candidate.size
+                            candidate_image = source_candidate.convert("RGB")
+                        if source_size == original_size:
+                            reusable_source_path = baseline_candidate_path
+                        else:
+                            candidate_image = candidate_image.resize(original_size)
                     else:
                         inv_result = invert(pipe, args, str(image_file), datum["prompt"], timesteps)
                         candidate_image = edit(pipe, args, inv_result, datum["prompt"], datum["prompt_editing"], timesteps)
@@ -603,6 +635,7 @@ def main():
                         {
                             "schedule_mode": schedule_mode,
                             "image": candidate_image,
+                            "source_path": reusable_source_path,
                             "features": features,
                         }
                     )
@@ -611,6 +644,7 @@ def main():
                 best_index = select_candidate(candidate_records, args)
                 best_record = candidate_records[best_index]
                 edited = best_record["image"]
+                selected_source_path = best_record["source_path"]
                 selection_record = {
                     "file": rel_path,
                     "selected_schedule_mode": best_record["schedule_mode"],
@@ -623,7 +657,16 @@ def main():
                         for record in candidate_records
                     ],
                 }
-                selection_records.append(selection_record)
+                selection_records_by_file[rel_path] = selection_record
+                if len(selection_records_by_file) % 10 == 0:
+                    write_json_atomic(
+                        selection_records_path,
+                        [
+                            selection_records_by_file[item["file"]]
+                            for item in data
+                            if item["file"] in selection_records_by_file
+                        ],
+                    )
                 print(
                     f"[{args.case_key}] selected {best_record['schedule_mode']} for {rel_path}",
                     flush=True,
@@ -632,7 +675,11 @@ def main():
                 inv_result = invert(pipe, args, str(image_file), datum["prompt"], inverse_timesteps)
                 edited = edit(pipe, args, inv_result, datum["prompt"], datum["prompt_editing"], generation_timesteps)
                 edited = edited.resize(original_size)
-            edited.save(dst_path)
+                selected_source_path = None
+            if selected_source_path is not None:
+                shutil.copy2(selected_source_path, dst_path)
+            else:
+                edited.save(dst_path)
             completed += 1
             elapsed = time.perf_counter() - start
             print(f"[{args.case_key}] {index + 1}/{len(data)} saved {rel_path} elapsed={elapsed:.1f}s", flush=True)
@@ -650,10 +697,14 @@ def main():
         "finished_at": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
     (output_dir / "run_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    if selection_records:
-        (output_dir / "selection_records.json").write_text(
-            json.dumps(selection_records, indent=2, ensure_ascii=False),
-            encoding="utf-8",
+    if selection_records_by_file:
+        write_json_atomic(
+            selection_records_path,
+            [
+                selection_records_by_file[item["file"]]
+                for item in data
+                if item["file"] in selection_records_by_file
+            ],
         )
     print(json.dumps(summary, indent=2), flush=True)
 
